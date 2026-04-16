@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<h2>Mini CRM</h2>
+
+<input id="name" placeholder="Name">
+<input id="email" placeholder="Email">
+<button onclick="addLead()">Add</button>
+
+<ul id="list"></ul>
+
+<script>
+const API = "http://localhost:3000";
+
+async function addLead() {
+    let name = document.getElementById("name").value;
+    let email = document.getElementById("email").value;
+
+    await fetch(API + "/add", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({name, email, status: "New"})
+    });
+
+    loadLeads();
+}
+
+async function loadLeads() {
+    let res = await fetch(API + "/leads");
+    let data = await res.json();
+
+    let output = "";
+    data.forEach((lead, i) => {
+        output += `<li>${lead.name} - ${lead.email} - ${lead.status}
+        <button onclick="updateLead(${i})">Contacted</button>
+        <button onclick="deleteLead(${i})">Delete</button></li>`;
+    });
+
+    document.getElementById("list").innerHTML = output;
+}
+
+async function updateLead(i) {
+    await fetch(API + "/update/" + i, {
+        method: "PUT",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({status: "Contacted"})
+    });
+    loadLeads();
+}
+
+async function deleteLead(i) {
+    await fetch(API + "/delete/" + i, {
+        method: "DELETE"
+    });
+    loadLeads();
+}
+
+loadLeads();
+</script>
+
+</body>
+</html>
